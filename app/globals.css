@@ -1,0 +1,47 @@
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #090a0d;
+  --bg2: #0e1015;
+  --bg3: #141720;
+  --border: #1e2235;
+  --text: #dde2f0;
+  --text2: #7a82a0;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  background: #090a0d;
+  color: #dde2f0;
+  font-family: 'DM Mono', 'Courier New', monospace;
+  margin: 0;
+  padding: 0;
+}
+
+/* Nav link hover */
+.nav-link:hover {
+  background: #1c2030 !important;
+  color: #dde2f0 !important;
+}
+
+/* Range slider */
+input[type=range] {
+  accent-color: #5b6af0;
+  height: 4px;
+}
+
+/* Input focus ring */
+input:focus, select:focus, textarea:focus {
+  border-color: #5b6af0 !important;
+  box-shadow: 0 0 0 2px rgba(91, 106, 240, 0.2);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0e1015; }
+::-webkit-scrollbar-thumb { background: #2a2e38; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #363b47; }

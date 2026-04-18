@@ -1,0 +1,11 @@
+Set-Content -LiteralPath "C:\propdeskpro\.env.local" -Value @"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_c3VtbWFyeS1kdWNrbGluZy00OS5jbGVyay5hY2NvdW50cy5kZXYk
+CLERK_SECRET_KEY=sk_test_R6Qk8MlwCJqUwc6PF6CbfvlNyxI5DwIV61STrFNgeU
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+DATABASE_URL=postgresql://postgres.kakaeclgfmclsirilgqm:Jaimatadi_@123!!!@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+DIRECT_URL=postgresql://postgres.kakaeclgfmclsirilgqm:Jaimatadi_@123!!!@aws-1-ap-south-1.pooler.supabase.com:5432/postgres
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+"@

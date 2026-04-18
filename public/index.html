@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PropDesk Pro — Pass Your Prop Firm Challenge</title>
+<meta name="description" content="Challenge tracker, Monte Carlo simulator, trade journal and multi-account stacker for prop firm traders. Built by traders, for traders.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #090a0d;
+  --bg2: #0e1015;
+  --bg3: #141720;
+  --bg4: #1c2030;
+  --border: #1e2235;
+  --border2: #2a2f45;
+  --text: #dde2f0;
+  --text2: #7a82a0;
+  --text3: #404660;
+  --green: #3ddc84;
+  --green-d: #0a2218;
+  --red: #ff5c5c;
+  --red-d: #1f0a0a;
+  --amber: #f5a623;
+  --amber-d: #231500;
+  --blue: #4d9fff;
+  --blue-d: #081830;
+  --accent: #5b6af0;
+  --accent2: #818cf8;
+  --mono: 'DM Mono', monospace;
+  --display: 'Syne', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);overflow-x:hidden;cursor:default}
+
+/* ─── GRID BG ─── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size:48px 48px;
+  opacity:.35;pointer-events:none;z-index:0
+}
+
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 40px;
+  background:rgba(9,10,13,.85);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px)
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo-icon{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.nav-logo-text{font-family:var(--display);font-weight:700;font-size:16px;color:var(--text)}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-size:12px;color:var(--text2);text-decoration:none;letter-spacing:.04em;transition:color .15s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{display:flex;gap:10px;align-items:center}
+.btn{padding:8px 18px;font-size:12px;font-family:var(--mono);cursor:pointer;border-radius:7px;text-decoration:none;transition:all .15s;letter-spacing:.04em;font-weight:500}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--text2);color:var(--text)}
+.btn-primary{background:var(--accent);border:none;color:#fff}
+.btn-primary:hover{background:var(--accent2)}
+.btn-lg{padding:13px 28px;font-size:14px;border-radius:9px}
+
+/* ─── SECTIONS ─── */
+section{position:relative;z-index:1}
+
+/* ─── HERO ─── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:120px 24px 80px;
+  position:relative
+}
+.hero-kicker{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:20px;padding:5px 14px;font-size:11px;
+  color:var(--text2);letter-spacing:.06em;margin-bottom:28px;
+  animation:fadeUp .6s ease both
+}
+.kicker-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.hero h1{
+  font-family:var(--display);font-size:clamp(42px,7vw,88px);
+  font-weight:800;line-height:1.04;letter-spacing:-.03em;
+  margin-bottom:24px;
+  animation:fadeUp .6s .1s ease both
+}
+.hero h1 .line2{color:var(--accent2)}
+.hero-sub{
+  font-size:16px;color:var(--text2);max-width:520px;line-height:1.7;
+  margin-bottom:36px;animation:fadeUp .6s .2s ease both
+}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;animation:fadeUp .6s .3s ease both}
+.hero-stats{
+  display:flex;gap:40px;margin-top:56px;
+  animation:fadeUp .6s .4s ease both;flex-wrap:wrap;justify-content:center
+}
+.hero-stat{text-align:left}
+.hero-stat .n{font-family:var(--display);font-size:28px;font-weight:700;color:var(--text)}
+.hero-stat .l{font-size:11px;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-top:2px}
+
+/* ─── TERMINAL BLOCK ─── */
+.terminal{
+  margin-top:64px;background:var(--bg2);border:1px solid var(--border2);
+  border-radius:12px;padding:0;max-width:680px;width:100%;text-align:left;
+  animation:fadeUp .6s .5s ease both;overflow:hidden
+}
+.terminal-bar{
+  padding:10px 16px;background:var(--bg3);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:6px
+}
+.t-dot{width:10px;height:10px;border-radius:50%}
+.t-red{background:#ff5f57}.t-amber{background:#febc2e}.t-green{background:#28c840}
+.terminal-body{padding:18px 20px;font-size:12px;line-height:1.8}
+.t-comment{color:var(--text3)}
+.t-key{color:var(--blue)}
+.t-val{color:var(--green)}
+.t-str{color:var(--amber)}
+.t-cursor{
+  display:inline-block;width:8px;height:14px;background:var(--text2);
+  vertical-align:middle;animation:cursor .8s step-end infinite
+}
+@keyframes cursor{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ─── FEATURES ─── */
+.features{padding:100px 40px;max-width:1100px;margin:0 auto}
+.features-header{text-align:center;margin-bottom:60px}
+.section-kicker{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin-bottom:12px}
+.section-title{font-family:var(--display);font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:16px;overflow:hidden}
+.feature-card{background:var(--bg2);padding:28px;transition:background .2s}
+.feature-card:hover{background:var(--bg3)}
+.feature-icon{font-size:22px;margin-bottom:14px;display:block}
+.feature-title{font-family:var(--display);font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px}
+.feature-desc{font-size:12px;color:var(--text2);line-height:1.7}
+
+/* ─── FIRMS ─── */
+.firms{padding:80px 40px;max-width:1100px;margin:0 auto}
+.firms-strip{
+  display:flex;gap:0;flex-wrap:wrap;border:1px solid var(--border);
+  border-radius:12px;overflow:hidden
+}
+.firm-tile{
+  flex:1;min-width:150px;padding:20px;border-right:1px solid var(--border);
+  text-align:center;background:var(--bg2);transition:background .2s
+}
+.firm-tile:hover{background:var(--bg3)}
+.firm-tile:last-child{border-right:none}
+.firm-name{font-family:var(--display);font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.firm-split{font-size:11px;color:var(--green)}
+.firm-size{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ─── HOW IT WORKS ─── */
+.how{padding:100px 40px;max-width:900px;margin:0 auto}
+.steps-timeline{position:relative;padding-left:32px}
+.steps-timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:1px;background:var(--border2)}
+.step-item{position:relative;margin-bottom:40px}
+.step-item:last-child{margin-bottom:0}
+.step-dot2{
+  position:absolute;left:-32px;top:4px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--bg2);border:2px solid var(--accent);
+  display:flex;align-items:center;justify-content:center
+}
+.step-dot2.done{background:var(--accent)}
+.step-num{font-size:9px;font-weight:700;color:var(--text2)}
+.step-title{font-family:var(--display);font-size:17px;font-weight:600;color:var(--text);margin-bottom:6px}
+.step-desc{font-size:12px;color:var(--text2);line-height:1.7;max-width:580px}
+.step-tag{display:inline-block;font-size:10px;padding:3px 9px;border-radius:20px;margin-top:8px;font-weight:500}
+.tag-green{background:var(--green-d);color:var(--green)}
+.tag-blue{background:var(--blue-d);color:var(--blue)}
+.tag-amber{background:var(--amber-d);color:var(--amber)}
+
+/* ─── PRICING ─── */
+.pricing{padding:100px 40px;max-width:900px;margin:0 auto}
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:48px}
+.price-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:16px;padding:28px;position:relative
+}
+.price-card.featured{border-color:var(--accent)}
+.price-badge{
+  position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  background:var(--accent);color:#fff;font-size:10px;font-weight:700;
+  padding:4px 14px;border-radius:20px;letter-spacing:.06em;white-space:nowrap
+}
+.price-plan{font-family:var(--display);font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px}
+.price-amount{display:flex;align-items:baseline;gap:4px;margin-bottom:4px}
+.price-n{font-family:var(--display);font-size:36px;font-weight:800;color:var(--text)}
+.price-per{font-size:12px;color:var(--text2)}
+.price-desc{font-size:12px;color:var(--text2);margin-bottom:20px;line-height:1.6}
+.price-features{list-style:none;margin-bottom:24px}
+.price-features li{font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.price-features li:last-child{border-bottom:none}
+.pf-check{color:var(--green);font-size:11px}
+.pf-x{color:var(--text3);font-size:11px}
+
+/* ─── SOCIAL PROOF ─── */
+.social{padding:80px 40px;max-width:1100px;margin:0 auto}
+.quotes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:40px}
+.quote-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px}
+.quote-text{font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:16px}
+.quote-author{display:flex;align-items:center;gap:10px}
+.quote-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;font-family:var(--display);font-weight:700;color:var(--text2)}
+.quote-name{font-size:12px;font-weight:500;color:var(--text)}
+.quote-role{font-size:11px;color:var(--text3)}
+
+/* ─── CTA BAND ─── */
+.cta-band{
+  margin:0 40px 80px;border:1px solid var(--border2);border-radius:16px;
+  padding:56px 48px;text-align:center;background:var(--bg2);position:relative;overflow:hidden
+}
+.cta-band::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 600px 200px at 50% 100%, rgba(91,106,240,.08), transparent);
+  pointer-events:none
+}
+.cta-band h2{font-family:var(--display);font-size:clamp(24px,4vw,40px);font-weight:800;letter-spacing:-.02em;margin-bottom:12px}
+.cta-band p{font-size:14px;color:var(--text2);margin-bottom:28px;max-width:460px;margin-left:auto;margin-right:auto}
+
+/* ─── FOOTER ─── */
+footer{border-top:1px solid var(--border);padding:40px;display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto;flex-wrap:wrap;gap:16px}
+.footer-logo{font-family:var(--display);font-size:14px;font-weight:700;color:var(--text2)}
+.footer-links{display:flex;gap:20px}
+.footer-links a{font-size:11px;color:var(--text3);text-decoration:none;transition:color .15s}
+.footer-links a:hover{color:var(--text2)}
+.footer-copy{font-size:11px;color:var(--text3)}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease, transform .6s ease}
+.reveal.in{opacity:1;transform:translateY(0)}
+
+/* ─── TICKER ─── */
+.ticker-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2);padding:10px 0}
+.ticker-track{display:flex;gap:0;animation:ticker 30s linear infinite;white-space:nowrap}
+.ticker-item{font-size:11px;padding:0 32px;color:var(--text2);border-right:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.ticker-item .up{color:var(--green)}.ticker-item .dn{color:var(--red)}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+@media(max-width:768px){
+  nav{padding:14px 20px}
+  .nav-links{display:none}
+  .features-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .quotes-grid{grid-template-columns:1fr}
+  .features,.firms,.how,.pricing,.social{padding:60px 20px}
+  .cta-band{margin:0 20px 60px;padding:40px 24px}
+  footer{padding:30px 20px}
+  .hero-stats{gap:24px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">⚡</div>
+    <span class="nav-logo-text">PropDesk Pro</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#firms">Firms</a></li>
+  </ul>
+  <div class="nav-cta">
+    <a href="/sign-in" class="btn btn-ghost">Log in</a>
+    <a href="/sign-up" class="btn btn-primary">Start free</a>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div style="margin-top:64px" class="ticker-wrap">
+  <div class="ticker-track">
+    <div class="ticker-item">EUR/USD <span class="up">▲ 1.0843</span></div>
+    <div class="ticker-item">GBP/USD <span class="dn">▼ 1.2671</span></div>
+    <div class="ticker-item">XAU/USD <span class="up">▲ 2,324.80</span></div>
+    <div class="ticker-item">NAS100 <span class="up">▲ 18,204</span></div>
+    <div class="ticker-item">BTC/USD <span class="up">▲ 67,420</span></div>
+    <div class="ticker-item">USD/JPY <span class="dn">▼ 154.32</span></div>
+    <div class="ticker-item">FTMO $100K <span style="color:var(--accent2)">●</span> $556</div>
+    <div class="ticker-item">Topstep $50K <span style="color:var(--accent2)">●</span> $49/mo</div>
+    <div class="ticker-item">EUR/USD <span class="up">▲ 1.0843</span></div>
+    <div class="ticker-item">GBP/USD <span class="dn">▼ 1.2671</span></div>
+    <div class="ticker-item">XAU/USD <span class="up">▲ 2,324.80</span></div>
+    <div class="ticker-item">NAS100 <span class="up">▲ 18,204</span></div>
+    <div class="ticker-item">BTC/USD <span class="up">▲ 67,420</span></div>
+    <div class="ticker-item">USD/JPY <span class="dn">▼ 154.32</span></div>
+    <div class="ticker-item">FTMO $100K <span style="color:var(--accent2)">●</span> $556</div>
+    <div class="ticker-item">Topstep $50K <span style="color:var(--accent2)">●</span> $49/mo</div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-kicker"><span class="kicker-dot"></span>Built for serious prop traders</div>
+  <h1>
+    Pass the challenge.<br>
+    <span class="line2">Get funded. Scale.</span>
+  </h1>
+  <p class="hero-sub">
+    Challenge tracker, Monte Carlo simulator, trade journal, and multi-account stacker — everything you need to pass your prop firm evaluation and build a six-figure trading income.
+  </p>
+  <div class="hero-actions">
+    <a href="/sign-up" class="btn btn-primary btn-lg">Start free — no card needed</a>
+    <a href="#how" class="btn btn-ghost btn-lg">See how it works</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="n">$5K–$50K</div><div class="l">Daily potential</div></div>
+    <div class="hero-stat"><div class="n">80–90%</div><div class="l">Profit split</div></div>
+    <div class="hero-stat"><div class="n">6 firms</div><div class="l">Tracked & compared</div></div>
+    <div class="hero-stat"><div class="n">$0</div><div class="l">Capital at risk</div></div>
+  </div>
+
+  <div class="terminal">
+    <div class="terminal-bar">
+      <span class="t-dot t-red"></span>
+      <span class="t-dot t-amber"></span>
+      <span class="t-dot t-green"></span>
+      <span style="font-size:11px;color:var(--text3);margin-left:8px">propdeskpro — simulation.js</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="t-comment">// Running 1,000 Monte Carlo paths against FTMO rules</span></div>
+      <div>&nbsp;</div>
+      <div><span class="t-key">const</span> strategy = {</div>
+      <div>&nbsp; winRate: <span class="t-val">55</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="t-comment">// %</span></div>
+      <div>&nbsp; riskReward: <span class="t-val">2.0</span>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="t-comment">// 1:2</span></div>
+      <div>&nbsp; riskPerTrade: <span class="t-val">0.5</span>,&nbsp;&nbsp;&nbsp;&nbsp; <span class="t-comment">// % of account</span></div>
+      <div>&nbsp; tradesPerDay: <span class="t-val">2</span></div>
+      <div>}</div>
+      <div>&nbsp;</div>
+      <div><span class="t-key">const</span> result = simulate(strategy, ftmoRules)</div>
+      <div>&nbsp;</div>
+      <div><span class="t-comment">// Output:</span></div>
+      <div>passRate: <span class="t-val">73</span><span class="t-str">%</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="t-comment">✓ Ready to buy challenge</span></div>
+      <div>avgPnL: <span class="t-str">"+$11,240"</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="t-comment">after 30 days</span></div>
+      <div>ddBreachRate: <span class="t-val">8</span><span class="t-str">%</span>&nbsp;&nbsp;&nbsp; <span class="t-comment">// well within limits</span></div>
+      <div><span class="t-cursor"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="features-header reveal">
+    <div class="section-kicker">What's inside</div>
+    <h2 class="section-title">Every tool a prop trader needs</h2>
+  </div>
+  <div class="features-grid reveal">
+    <div class="feature-card">
+      <span class="feature-icon">◎</span>
+      <div class="feature-title">Challenge tracker</div>
+      <div class="feature-desc">Real-time progress against your profit target, daily DD limit, and time remaining. Know exactly whether you're on pace — or need to push.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">◬</span>
+      <div class="feature-title">Monte Carlo simulator</div>
+      <div class="feature-desc">Run 2,000 simulated challenge paths with your actual strategy. See your pass probability before spending $500 on a real evaluation.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">◈</span>
+      <div class="feature-title">Position size calculator</div>
+      <div class="feature-desc">Enter your stop loss in pips — get exact lot size, pip value, TP amount, R:R ratio, and a daily exposure safety check against prop firm rules.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">◧</span>
+      <div class="feature-title">Trade journal</div>
+      <div class="feature-desc">Log every trade with entry, exit, session, setup type, and notes. Auto-calculates win rate, profit factor, expectancy, and best/worst trades.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">◫</span>
+      <div class="feature-title">Multi-account stacker</div>
+      <div class="feature-desc">Run 3–10 funded accounts simultaneously? Track all income streams in one place. See exactly what you need to hit $10K, $25K, $50K/month.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">▣</span>
+      <div class="feature-title">Firm comparison</div>
+      <div class="feature-desc">FTMO, Topstep, The5%ers, MyFundedFX, Apex — all profit splits, drawdown rules, fees, and scaling plans compared side by side.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FIRMS -->
+<section class="firms" id="firms">
+  <div class="features-header reveal" style="text-align:left;margin-bottom:24px">
+    <div class="section-kicker">Supported firms</div>
+    <h2 class="section-title" style="font-size:clamp(22px,3vw,32px)">Built around the industry's top prop firms</h2>
+  </div>
+  <div class="firms-strip reveal">
+    <div class="firm-tile"><div class="firm-name">FTMO</div><div class="firm-split">80–90% split</div><div class="firm-size">Up to $2M</div></div>
+    <div class="firm-tile"><div class="firm-name">Topstep</div><div class="firm-split">90% split</div><div class="firm-size">Up to $500K</div></div>
+    <div class="firm-tile"><div class="firm-name">The5%ers</div><div class="firm-split">50–100% split</div><div class="firm-size">Up to $4M</div></div>
+    <div class="firm-tile"><div class="firm-name">MyFundedFX</div><div class="firm-split">75–85% split</div><div class="firm-size">Up to $1M</div></div>
+    <div class="firm-tile"><div class="firm-name">Apex</div><div class="firm-split">90%+ split</div><div class="firm-size">Up to $300K</div></div>
+    <div class="firm-tile"><div class="firm-name">Funded Eng.</div><div class="firm-split">80% split</div><div class="firm-size">Up to $1M</div></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="features-header reveal" style="text-align:left;margin-bottom:48px">
+    <div class="section-kicker">How it works</div>
+    <h2 class="section-title">From zero to funded in 6 steps</h2>
+  </div>
+  <div class="steps-timeline reveal">
+    <div class="step-item">
+      <div class="step-dot2 done"><span class="step-num">1</span></div>
+      <div class="step-title">Simulate your strategy</div>
+      <div class="step-desc">Run Monte Carlo simulations with your win rate, R:R, and risk% against real prop firm rules. If your pass rate is below 60%, adjust before spending money.</div>
+      <span class="step-tag tag-blue">Challenge Simulator</span>
+    </div>
+    <div class="step-item">
+      <div class="step-dot2"><span class="step-num">2</span></div>
+      <div class="step-title">Buy the challenge</div>
+      <div class="step-desc">Pick the right firm for your style. FTMO for forex/indices. Topstep for futures. The5%ers if you want no time limit. Challenge fees start at $155.</div>
+      <span class="step-tag tag-amber">Firm Comparison</span>
+    </div>
+    <div class="step-item">
+      <div class="step-dot2"><span class="step-num">3</span></div>
+      <div class="step-title">Track your challenge daily</div>
+      <div class="step-desc">PropDesk shows your profit progress vs. time consumed. Never guess if you're on pace. Get alerted when you're approaching drawdown limits.</div>
+      <span class="step-tag tag-blue">Challenge Tracker</span>
+    </div>
+    <div class="step-item">
+      <div class="step-dot2"><span class="step-num">4</span></div>
+      <div class="step-title">Get funded — start earning</div>
+      <div class="step-desc">Pass both phases and receive your live funded account. Trade real capital. Keep 80–90% of every dollar you make. First payout in 14–30 days.</div>
+      <span class="step-tag tag-green">Funded + earning</span>
+    </div>
+    <div class="step-item">
+      <div class="step-dot2"><span class="step-num">5</span></div>
+      <div class="step-title">Stack multiple accounts</div>
+      <div class="step-desc">Most successful traders run 3–10 funded accounts simultaneously. PropDesk tracks all income streams and tells you exactly what you need to hit your income goals.</div>
+      <span class="step-tag tag-green">Multi-Account Stacker</span>
+    </div>
+    <div class="step-item">
+      <div class="step-dot2"><span class="step-num">6</span></div>
+      <div class="step-title">Scale to $50K+/month</div>
+      <div class="step-desc">FTMO scales accounts to $2M. The5%ers to $4M. With PropDesk tracking your stats and optimising your risk, scaling is the natural next step.</div>
+      <span class="step-tag tag-amber">Income Projector</span>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="social">
+  <div class="features-header reveal" style="text-align:center;margin-bottom:0">
+    <div class="section-kicker">From the community</div>
+    <h2 class="section-title" style="font-size:clamp(22px,3vw,34px)">Traders who stopped guessing and started passing</h2>
+  </div>
+  <div class="quotes-grid reveal">
+    <div class="quote-card">
+      <div class="quote-text">"I failed two FTMO challenges before using the simulator. Turned out my strategy only had a 28% pass rate at 1% risk. Dropped to 0.5% and passed on the next attempt."</div>
+      <div class="quote-author">
+        <div class="quote-avatar">AK</div>
+        <div><div class="quote-name">Arjun K.</div><div class="quote-role">FTMO funded — $100K</div></div>
+      </div>
+    </div>
+    <div class="quote-card">
+      <div class="quote-text">"The challenge tracker is the one thing I open every morning before I trade. Knowing my exact pace vs. remaining days keeps me disciplined. Passed Phase 1 in 18 days."</div>
+      <div class="quote-author">
+        <div class="quote-avatar">SM</div>
+        <div><div class="quote-name">Sofia M.</div><div class="quote-role">MyFundedFX — $200K</div></div>
+      </div>
+    </div>
+    <div class="quote-card">
+      <div class="quote-text">"Running 4 funded accounts now. The multi-account stacker helps me see at a glance which accounts need attention and what my total projected income is each month."</div>
+      <div class="quote-author">
+        <div class="quote-avatar">DR</div>
+        <div><div class="quote-name">Daniel R.</div><div class="quote-role">4× funded — $340K total</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="features-header reveal" style="text-align:center">
+    <div class="section-kicker">Pricing</div>
+    <h2 class="section-title">Simple. No tricks.</h2>
+  </div>
+  <div class="pricing-grid reveal">
+    <div class="price-card">
+      <div class="price-plan">Free</div>
+      <div class="price-amount"><span class="price-n">$0</span><span class="price-per">/ forever</span></div>
+      <div class="price-desc">Full access to all tools. No credit card. No time limit. Upgrade only when you're ready.</div>
+      <ul class="price-features">
+        <li><span class="pf-check">✓</span>Challenge tracker</li>
+        <li><span class="pf-check">✓</span>Risk calculator</li>
+        <li><span class="pf-check">✓</span>Monte Carlo simulator</li>
+        <li><span class="pf-check">✓</span>Trade journal (50 trades)</li>
+        <li><span class="pf-check">✓</span>Firm comparison</li>
+        <li><span class="pf-x">—</span>Cloud trade sync</li>
+        <li><span class="pf-x">—</span>Multi-account stacker</li>
+        <li><span class="pf-x">—</span>AI trade review</li>
+      </ul>
+      <a href="/sign-up" class="btn btn-ghost" style="width:100%;display:block;text-align:center;padding:11px">Get started free</a>
+    </div>
+    <div class="price-card featured">
+      <div class="price-badge">MOST POPULAR</div>
+      <div class="price-plan">Pro</div>
+      <div class="price-amount"><span class="price-n">$29</span><span class="price-per">/ month</span></div>
+      <div class="price-desc">Everything a serious prop trader needs. Cancel any time — no questions asked.</div>
+      <ul class="price-features">
+        <li><span class="pf-check">✓</span>Everything in Free</li>
+        <li><span class="pf-check">✓</span>Unlimited trade journal</li>
+        <li><span class="pf-check">✓</span>Cloud sync across devices</li>
+        <li><span class="pf-check">✓</span>Multi-account stacker</li>
+        <li><span class="pf-check">✓</span>CSV export</li>
+        <li><span class="pf-check">✓</span>AI trade review (Groq)</li>
+        <li><span class="pf-check">✓</span>Priority support</li>
+        <li><span class="pf-check">✓</span>Early access to new tools</li>
+      </ul>
+      <a href="/sign-up?plan=pro" class="btn btn-primary" style="width:100%;display:block;text-align:center;padding:11px">Start Pro — 7 days free</a>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:11px;color:var(--text3);margin-top:20px">
+    One month of Pro costs less than the commission on a single lot trade. If PropDesk helps you pass just one challenge, it pays for itself 20× over.
+  </p>
+</section>
+
+<!-- CTA BAND -->
+<div class="cta-band reveal">
+  <h2>Stop failing challenges.<br>Start getting funded.</h2>
+  <p>The only thing standing between you and a funded account is knowing your numbers. PropDesk makes that part easy.</p>
+  <a href="/sign-up" class="btn btn-primary btn-lg">Create free account →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">⚡ PropDesk Pro</div>
+  <div class="footer-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/blog">Blog</a>
+    <a href="/affiliate">Affiliates</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+  </div>
+  <div class="footer-copy">© 2025 PropDesk Pro. Not financial advice.</div>
+</footer>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in') })
+}, { threshold: 0.1 })
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
+
+document.querySelectorAll('.step-dot2').forEach((dot, i) => {
+  setTimeout(() => {
+    if(!dot.classList.contains('done')) dot.classList.add('done')
+  }, (i + 1) * 600)
+})
+</script>
+</body>
+</html>

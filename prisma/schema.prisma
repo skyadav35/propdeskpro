@@ -1,0 +1,136 @@
+// prisma/schema.prisma
+// Run: npx prisma db push  (creates tables in Supabase)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id          String    @id @default(cuid())
+  clerkId     String    @unique
+  email       String    @unique
+  name        String?
+  plan        Plan      @default(FREE)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  trades      Trade[]
+  accounts    FundedAccount[]
+  challenges  Challenge[]
+}
+
+enum Plan {
+  FREE
+  PRO
+  LIFETIME
+}
+
+// ─── Trade Journal ────────────────────────────────────────────────
+model Trade {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date        DateTime
+  instrument  String
+  direction   Direction
+  session     Session?
+  entryPrice  Float?
+  exitPrice   Float?
+  lotSize     Float?
+  pnl         Float
+  result      TradeResult
+  setup       String?
+  notes       String?
+  riskReward  Float?
+
+  challengeId String?
+  challenge   Challenge?  @relation(fields: [challengeId], references: [id])
+
+  createdAt   DateTime    @default(now())
+
+  @@index([userId])
+  @@index([date])
+}
+
+enum Direction {
+  LONG
+  SHORT
+}
+
+enum Session {
+  LONDON
+  NEW_YORK
+  ASIAN
+  OVERLAP
+}
+
+enum TradeResult {
+  WIN
+  LOSS
+  BREAKEVEN
+}
+
+// ─── Funded Accounts ──────────────────────────────────────────────
+model FundedAccount {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  firm        String
+  accountSize Float
+  profitSplit Float     @default(80)
+  dailyGainPct Float    @default(0.5)
+  tradingDays Int       @default(20)
+  status      AccountStatus @default(ACTIVE)
+  startDate   DateTime  @default(now())
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+enum AccountStatus {
+  ACTIVE
+  PAUSED
+  BLOWN
+  SCALED
+}
+
+// ─── Challenges ───────────────────────────────────────────────────
+model Challenge {
+  id            String          @id @default(cuid())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  firm          String
+  phase         Int             @default(1)
+  accountSize   Float
+  profitTarget  Float           @default(10)
+  maxDailyDD    Float           @default(5)
+  maxTotalDD    Float           @default(10)
+  tradingDays   Int             @default(30)
+  status        ChallengeStatus @default(IN_PROGRESS)
+  startDate     DateTime        @default(now())
+  endDate       DateTime?
+
+  trades        Trade[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([userId])
+}
+
+enum ChallengeStatus {
+  IN_PROGRESS
+  PASSED
+  FAILED
+  EXPIRED
+}
