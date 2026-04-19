@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div style={{ padding: '20px 16px', borderBottom: '1px solid #2a2e38' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 28, height: 28, background: '#6366f1', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⚡</div>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>PropDesk Pro</span>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>FundPro Plus</span>
           </div>
         </div>
 
