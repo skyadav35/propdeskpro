@@ -5,15 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
-  },
-  "postinstall"
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
     "start": "next start",
     "postinstall": "prisma generate"
-},
+  },
   "dependencies": {
     "@clerk/nextjs": "5.0.0",
     "@prisma/client": "5.12.0",
