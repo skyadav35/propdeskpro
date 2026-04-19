@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const parsed = TradeSchema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid trade data', details: parsed.error.flatten() }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid trade data', details: ('error' in parsed ? ('error' in parsed ? parsed.error.flatten() : {}) : {}) }, { status: 400 })
   }
 
   // Upsert user (in case they signed up via Clerk but haven't hit DB yet)
@@ -83,13 +83,17 @@ export async function POST(req: NextRequest) {
     create: { clerkId, email: '' },
   })
 
-  const trade = await db.trade.create({
-    data: {
-      ...parsed.data,
-      date: new Date(parsed.data.date),
-      userId: user.id,
-    },
-  })
+  const { challengeId, ...tradeData } = parsed.data
+const trade = await db.trade.create({
+  data: {
+    ...tradeData,
+    date: new Date(parsed.data.date),
+    userId: user.id,
+    session: parsed.data.session as any,
+    direction: parsed.data.direction as any,
+    result: parsed.data.result as any,
+  } as any,
+})
 
   return NextResponse.json(trade, { status: 201 })
 }
