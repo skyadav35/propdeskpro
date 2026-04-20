@@ -1,63 +1,86 @@
-// app/dashboard/layout.tsx
+'use client'
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import { auth } from '@clerk/nextjs/server'
+import { usePathname } from 'next/navigation'
 
-const navItems = [
-  { href: '/dashboard',            label: 'Overview',    icon: '▣' },
-  { href: '/dashboard/challenge',  label: 'Challenge',   icon: '◎' },
-  { href: '/dashboard/risk',       label: 'Risk Mgr',    icon: '◈' },
-  { href: '/dashboard/journal',    label: 'Journal',     icon: '◧' },
-  { href: '/dashboard/stacker',    label: 'Multi-Acct',  icon: '◫' },
-  { href: '/dashboard/simulator',  label: 'Simulator',   icon: '◬' },
+const nav = [
+  { href: '/dashboard',           label: 'Overview',    icon: '▣' },
+  { href: '/dashboard/challenge', label: 'Challenge',   icon: '◎' },
+  { href: '/dashboard/risk',      label: 'Risk Mgr',    icon: '◈' },
+  { href: '/dashboard/journal',   label: 'Journal',     icon: '◧' },
+  { href: '/dashboard/stacker',   label: 'Multi-Acct',  icon: '◫' },
+  { href: '/dashboard/simulator', label: 'Simulator',   icon: '◬' },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { userId } = auth()
-  if (!userId) redirect('/sign-in')
-
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0d0e11', color: '#e8eaf0', fontFamily: 'system-ui' }}>
-      {/* Sidebar */}
+    <div style={{ display:'flex', minHeight:'100vh', background:'#080a10', fontFamily:"'Syne',sans-serif" }}>
       <aside style={{
-        width: 220, background: '#13151a', borderRight: '1px solid #2a2e38',
-        display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, height: '100vh'
+        width: 220, background: '#0d1018',
+        borderRight: '1px solid #1e2538',
+        display: 'flex', flexDirection: 'column',
+        position: 'fixed', top: 0, left: 0, height: '100vh',
+        zIndex: 50
       }}>
-        <div style={{ padding: '20px 16px', borderBottom: '1px solid #2a2e38' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 28, height: 28, background: '#6366f1', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⚡</div>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>FundPro Plus</span>
+        {/* Logo */}
+        <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid #1e2538' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 32, height: 32, background: '#5b6af0',
+              borderRadius: 9, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontSize: 15, flexShrink: 0
+            }}>⚡</div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 14, color: '#e8edf8', letterSpacing: '.01em' }}>FundPro Plus</div>
+              <div style={{ fontSize: 10, color: '#4a5580', letterSpacing: '.06em', textTransform: 'uppercase' }}>Prop Firm Tools</div>
+            </div>
           </div>
         </div>
 
-        <nav style={{ flex: 1, padding: '12px 8px' }}>
-          {navItems.map(item => (
-            <Link key={item.href} href={item.href} style={{
-              display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px',
-              borderRadius: 8, marginBottom: 2, fontSize: 13, color: '#8b8fa8',
-              textDecoration: 'none', transition: 'all .15s',
-            }}
-            className="nav-link"
-            >
-              <span style={{ fontSize: 16 }}>{item.icon}</span>
-              {item.label}
-            </Link>
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto' }}>
+          {nav.map(item => (
+            <NavItem key={item.href} {...item} />
           ))}
         </nav>
 
-        <div style={{ padding: '12px 16px', borderTop: '1px solid #2a2e38' }}>
+        {/* Bottom */}
+        <div style={{ padding: '12px 16px', borderTop: '1px solid #1e2538' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <UserButton afterSignOutUrl="/" />
-            <span style={{ fontSize: 12, color: '#565a6e' }}>Account</span>
+            <div>
+              <div style={{ fontSize: 12, color: '#8892b0' }}>Account</div>
+              <div style={{ fontSize: 10, color: '#4a5580' }}>Manage profile</div>
+            </div>
           </div>
         </div>
       </aside>
 
-      {/* Main content */}
-      <main style={{ marginLeft: 220, flex: 1, padding: 28, maxWidth: '100%' }}>
+      {/* Main */}
+      <main style={{ marginLeft: 220, flex: 1, padding: '28px 32px', minHeight: '100vh' }}>
         {children}
       </main>
     </div>
+  )
+}
+
+function NavItem({ href, label, icon }: { href: string; label: string; icon: string }) {
+  const pathname = usePathname()
+  const active = pathname === href
+
+  return (
+    <Link href={href} style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '9px 12px', borderRadius: 9, marginBottom: 2,
+      fontSize: 13, fontWeight: active ? 600 : 400,
+      color: active ? '#818cf8' : '#8892b0',
+      textDecoration: 'none',
+      background: active ? 'rgba(91,106,240,.12)' : 'transparent',
+      transition: 'all .15s',
+      borderLeft: active ? '2px solid #5b6af0' : '2px solid transparent',
+    }}>
+      <span style={{ fontSize: 15, opacity: active ? 1 : 0.6 }}>{icon}</span>
+      {label}
+    </Link>
   )
 }
