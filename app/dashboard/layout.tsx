@@ -2,10 +2,10 @@
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const nav = [
-  { href: '/dashboard',           label: 'Overview',   icon: '▣' },
+  { href: '/dashboard',           label: 'Overview',   icon: '⊞' },
   { href: '/dashboard/challenge', label: 'Challenge',  icon: '◎' },
   { href: '/dashboard/risk',      label: 'Risk Mgr',   icon: '◈' },
   { href: '/dashboard/journal',   label: 'Journal',    icon: '◧' },
@@ -13,133 +13,71 @@ const nav = [
   { href: '/dashboard/simulator', label: 'Simulator',  icon: '◬' },
 ]
 
-// ─── Ticker data ─────────────────────────────────────────────────
-interface TickerItem { symbol: string; price: string; change: number; label: string }
-
-const PAIRS = [
-  { symbol: 'EURUSD=X', label: 'EUR/USD' },
-  { symbol: 'GBPUSD=X', label: 'GBP/USD' },
-  { symbol: 'USDJPY=X', label: 'USD/JPY' },
-  { symbol: 'XAUUSD=X', label: 'XAU/USD' },
-  { symbol: 'NQ=F',     label: 'NAS100'  },
-  { symbol: 'ES=F',     label: 'S&P500'  },
-  { symbol: 'BTC-USD',  label: 'BTC/USD' },
-  { symbol: 'ETH-USD',  label: 'ETH/USD' },
-]
-
-// Simulated prices with realistic values — updates every 3s with micro-movement
-const BASE_PRICES: Record<string, number> = {
-  'EUR/USD': 1.0854, 'GBP/USD': 1.2671, 'USD/JPY': 154.32,
-  'XAU/USD': 2324.80, 'NAS100': 18204, 'S&P500': 5218,
-  'BTC/USD': 67420, 'ETH/USD': 3180,
+const BASE: Record<string, number> = {
+  'EUR/USD':1.0853,'GBP/USD':1.2677,'USD/JPY':154.31,
+  'XAU/USD':2324.80,'NAS100':18204,'BTC/USD':67488,'ETH/USD':3179,
 }
+
+interface TickerItem { label:string; price:string; change:number }
 
 function useTicker() {
   const [items, setItems] = useState<TickerItem[]>(() =>
-    PAIRS.map(p => ({
-      symbol: p.symbol,
-      label: p.label,
-      price: BASE_PRICES[p.label]?.toFixed(p.label.includes('JPY') ? 2 : p.label.includes('NAS') || p.label.includes('S&P') || p.label.includes('BTC') || p.label.includes('ETH') || p.label.includes('XAU') ? 2 : 4) || '0',
-      change: (Math.random() - 0.5) * 0.4,
+    Object.entries(BASE).map(([label, base]) => ({
+      label, price: base.toFixed(label.includes('JPY')||label.includes('NAS')||label.includes('XAU')||label.includes('BTC')||label.includes('ETH')?2:4),
+      change: (Math.random()-.5)*.4
     }))
   )
-
   useEffect(() => {
-    const interval = setInterval(() => {
+    const id = setInterval(() => {
       setItems(prev => prev.map(item => {
-        const base = BASE_PRICES[item.label] || 1
+        const base = BASE[item.label]||1
+        const isLarge = ['NAS100','BTC/USD','ETH/USD','XAU/USD'].includes(item.label)
         const isJpy = item.label.includes('JPY')
-        const isLarge = item.label.includes('NAS') || item.label.includes('S&P') || item.label.includes('BTC') || item.label.includes('ETH') || item.label.includes('XAU')
-        const volatility = isLarge ? base * 0.0003 : isJpy ? 0.04 : 0.00015
-        const delta = (Math.random() - 0.5) * 2 * volatility
-        const currentPrice = parseFloat(item.price)
-        const newPrice = Math.max(0.0001, currentPrice + delta)
-        const decimals = isJpy ? 2 : isLarge ? 2 : 4
-        const dailyChangePct = item.change + (Math.random() - 0.5) * 0.02
-        return {
-          ...item,
-          price: newPrice.toFixed(decimals),
-          change: Math.max(-3, Math.min(3, dailyChangePct)),
-        }
+        const vol = isLarge ? base*0.0003 : isJpy ? 0.04 : 0.00015
+        const delta = (Math.random()-.5)*2*vol
+        const newP = Math.max(0.0001, parseFloat(item.price)+delta)
+        const dec = isJpy||isLarge ? 2 : 4
+        return { ...item, price: newP.toFixed(dec), change: Math.max(-3, Math.min(3, item.change+(Math.random()-.5)*0.02)) }
       }))
-    }, 2800)
-    return () => clearInterval(interval)
+    }, 3000)
+    return () => clearInterval(id)
   }, [])
-
   return items
 }
 
-// ─── Ticker bar ──────────────────────────────────────────────────
 function TickerBar() {
   const items = useTicker()
   const [offset, setOffset] = useState(0)
   const trackRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    let animId: number
-    let pos = 0
-    const speed = 0.4
-    const animate = () => {
-      pos += speed
-      const trackW = trackRef.current?.scrollWidth ?? 1000
-      if (pos >= trackW / 2) pos = 0
-      setOffset(pos)
-      animId = requestAnimationFrame(animate)
+    let id: number, pos = 0
+    const tick = () => {
+      pos += 0.5
+      const w = trackRef.current?.scrollWidth ?? 1200
+      if (pos >= w/2) pos = 0
+      setOffset(pos); id = requestAnimationFrame(tick)
     }
-    animId = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(animId)
+    id = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(id)
   }, [])
 
   const doubled = [...items, ...items]
 
   return (
-    <div style={{
-      background: '#080a10',
-      borderBottom: '1px solid #1e2538',
-      overflow: 'hidden',
-      height: 36,
-      display: 'flex',
-      alignItems: 'center',
-      position: 'relative',
-    }}>
-      {/* Left fade */}
-      <div style={{ position:'absolute', left:0, top:0, bottom:0, width:60, background:'linear-gradient(90deg,#080a10,transparent)', zIndex:2, pointerEvents:'none' }} />
-      {/* Right fade */}
-      <div style={{ position:'absolute', right:0, top:0, bottom:0, width:60, background:'linear-gradient(270deg,#080a10,transparent)', zIndex:2, pointerEvents:'none' }} />
-
-      <div ref={trackRef} style={{
-        display: 'flex', alignItems: 'center',
-        transform: `translateX(-${offset}px)`,
-        willChange: 'transform',
-        whiteSpace: 'nowrap',
-      }}>
+    <div style={{ background:'#fff', borderBottom:'1px solid #E8EAF0', overflow:'hidden', height:40, display:'flex', alignItems:'center', position:'relative' }}>
+      <div style={{ position:'absolute', left:0, top:0, bottom:0, width:48, background:'linear-gradient(90deg,#fff,transparent)', zIndex:2, pointerEvents:'none' }} />
+      <div style={{ position:'absolute', right:0, top:0, bottom:0, width:48, background:'linear-gradient(270deg,#fff,transparent)', zIndex:2, pointerEvents:'none' }} />
+      <div ref={trackRef} style={{ display:'flex', alignItems:'center', transform:`translateX(-${offset}px)`, willChange:'transform', whiteSpace:'nowrap' }}>
         {doubled.map((item, i) => (
-          <div key={i} style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '0 24px', borderRight: '1px solid #1e2538',
-            height: 36,
-          }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#8892b0', letterSpacing: '.03em' }}>
-              {item.label}
+          <div key={i} style={{ display:'inline-flex', alignItems:'center', gap:7, padding:'0 20px', borderRight:'1px solid #F0F2F5', height:40 }}>
+            <span style={{ fontSize:12, fontWeight:600, color:'#5A6078', fontFamily:"'Nunito Sans',sans-serif" }}>{item.label}</span>
+            <span style={{ fontSize:13, fontWeight:700, fontFamily:'SF Mono,monospace', color: item.change>=0?'#00B386':'#F44336' }}>
+              {['XAU/USD','NAS100'].includes(item.label) ? parseFloat(item.price).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : item.label==='BTC/USD' ? parseFloat(item.price).toLocaleString('en-US',{maximumFractionDigits:0}) : item.price}
             </span>
-            <span style={{
-              fontSize: 12, fontWeight: 700,
-              fontFamily: "'DM Mono',monospace",
-              color: item.change >= 0 ? '#4ade80' : '#f87171',
-            }}>
-              {item.label === 'XAU/USD' || item.label === 'NAS100' || item.label === 'S&P500'
-                ? parseFloat(item.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                : item.label === 'BTC/USD' || item.label === 'ETH/USD'
-                ? parseFloat(item.price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-                : item.price}
-            </span>
-            <span style={{
-              fontSize: 10, fontFamily: "'DM Mono',monospace",
-              color: item.change >= 0 ? '#4ade80' : '#f87171',
-              background: item.change >= 0 ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.08)',
-              padding: '1px 5px', borderRadius: 4,
-            }}>
-              {item.change >= 0 ? '▲' : '▼'} {Math.abs(item.change).toFixed(2)}%
+            <span style={{ fontSize:11, padding:'1px 6px', borderRadius:4, fontFamily:'SF Mono,monospace', fontWeight:600,
+              background: item.change>=0?'#E8FBF5':'#FFEBEE', color: item.change>=0?'#007A5C':'#C62828' }}>
+              {item.change>=0?'▲':'▼'} {Math.abs(item.change).toFixed(2)}%
             </span>
           </div>
         ))}
@@ -148,109 +86,94 @@ function TickerBar() {
   )
 }
 
-// ─── Nav item ────────────────────────────────────────────────────
-function NavItem({ href, label, icon }: { href: string; label: string; icon: string }) {
+function LiveClock() {
+  const [time, setTime] = useState('')
+  useEffect(() => {
+    const u = () => setTime(new Date().toLocaleString('en-GB',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit'}))
+    u(); const id = setInterval(u,1000); return () => clearInterval(id)
+  }, [])
+  return <span style={{ fontFamily:'SF Mono,monospace', fontSize:12, color:'#9EA6C0' }}>{time}</span>
+}
+
+function NavItem({ href, label, icon }: { href:string; label:string; icon:string }) {
   const pathname = usePathname()
   const active = pathname === href
   return (
     <Link href={href} style={{
-      display: 'flex', alignItems: 'center', gap: 10,
-      padding: '9px 12px', borderRadius: 9, marginBottom: 2,
-      fontSize: 13, fontWeight: active ? 600 : 400,
-      color: active ? '#818cf8' : '#8892b0',
-      textDecoration: 'none',
-      background: active ? 'rgba(91,106,240,.12)' : 'transparent',
-      transition: 'all .15s',
-      borderLeft: active ? '2px solid #5b6af0' : '2px solid transparent',
+      display:'flex', alignItems:'center', gap:10,
+      padding:'10px 14px', borderRadius:10, marginBottom:2,
+      fontSize:13, fontWeight: active?700:500,
+      color: active?'#007A5C':'#5A6078',
+      textDecoration:'none',
+      background: active?'#E8FBF5':'transparent',
+      transition:'all .15s',
+      borderLeft: active?'3px solid #00B386':'3px solid transparent',
     }}>
-      <span style={{ fontSize: 15, opacity: active ? 1 : 0.6 }}>{icon}</span>
+      <span style={{ fontSize:15, opacity: active?1:0.6 }}>{icon}</span>
       {label}
     </Link>
   )
 }
 
-// ─── Layout ──────────────────────────────────────────────────────
-import { useRef } from 'react'
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#080a10', fontFamily: "'Syne',sans-serif" }}>
+    <div style={{ display:'flex', minHeight:'100vh', background:'#F0F2F5', fontFamily:"'Nunito Sans',sans-serif" }}>
       {/* Sidebar */}
       <aside style={{
-        width: 220, background: '#0d1018',
-        borderRight: '1px solid #1e2538',
-        display: 'flex', flexDirection: 'column',
-        position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 50,
+        width:228, background:'#fff',
+        borderRight:'1px solid #E8EAF0',
+        display:'flex', flexDirection:'column',
+        position:'fixed', top:0, left:0, height:'100vh', zIndex:50,
+        boxShadow:'2px 0 12px rgba(0,0,0,0.04)',
       }}>
         {/* Logo */}
-        <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid #1e2538' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width:32, height:32, background:'#5b6af0', borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, flexShrink:0 }}>⚡</div>
+        <div style={{ padding:'18px 18px 14px', borderBottom:'1px solid #E8EAF0' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <div style={{ width:34, height:34, background:'linear-gradient(135deg,#00B386,#00C896)', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, flexShrink:0, boxShadow:'0 4px 12px rgba(0,179,134,0.3)' }}>⚡</div>
             <div>
-              <div style={{ fontWeight:800, fontSize:14, color:'#e8edf8' }}>FundPro Plus</div>
-              <div style={{ fontSize:10, color:'#4a5580', letterSpacing:'.06em', textTransform:'uppercase' }}>Prop Firm Tools</div>
+              <div style={{ fontWeight:800, fontSize:15, color:'#1A1D2E', fontFamily:"'Nunito',sans-serif", lineHeight:1.2 }}>FundPro Plus</div>
+              <div style={{ fontSize:10, color:'#9EA6C0', letterSpacing:'.05em', textTransform:'uppercase' }}>Prop Firm Tools</div>
             </div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex:1, padding:'12px 8px', overflowY:'auto' }}>
+        <nav style={{ flex:1, padding:'12px 10px', overflowY:'auto' }}>
+          <div style={{ fontSize:10, letterSpacing:'.07em', textTransform:'uppercase', color:'#C4CAD9', padding:'6px 14px 4px', fontWeight:600 }}>Main menu</div>
           {nav.map(item => <NavItem key={item.href} {...item} />)}
         </nav>
 
         {/* User */}
-        <div style={{ padding:'12px 16px', borderTop:'1px solid #1e2538' }}>
+        <div style={{ padding:'14px 18px', borderTop:'1px solid #E8EAF0', background:'#FAFBFC' }}>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
             <UserButton afterSignOutUrl="/" />
             <div>
-              <div style={{ fontSize:12, color:'#8892b0' }}>Account</div>
-              <div style={{ fontSize:10, color:'#4a5580' }}>Manage profile</div>
+              <div style={{ fontSize:13, fontWeight:600, color:'#1A1D2E' }}>Account</div>
+              <div style={{ fontSize:11, color:'#9EA6C0' }}>Manage profile</div>
             </div>
           </div>
         </div>
       </aside>
 
-      {/* Main area */}
-      <div style={{ marginLeft:220, flex:1, display:'flex', flexDirection:'column', minHeight:'100vh' }}>
-        {/* Ticker bar — full width at top */}
+      {/* Main */}
+      <div style={{ marginLeft:228, flex:1, display:'flex', flexDirection:'column' }}>
+        {/* Ticker */}
         <TickerBar />
 
-        {/* Top bar with time */}
-        <div style={{
-          background:'#0d1018', borderBottom:'1px solid #1e2538',
-          padding:'10px 28px', display:'flex', justifyContent:'space-between', alignItems:'center',
-        }}>
-          <div style={{ fontSize:11, color:'#4a5580', letterSpacing:'.04em' }}>
-            <LiveClock />
-          </div>
-          <div style={{ display:'flex', gap:16, alignItems:'center' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:'#4a5580' }}>
-              <span style={{ width:6, height:6, borderRadius:'50%', background:'#4ade80', display:'inline-block', animation:'pulse 1.5s ease-in-out infinite' }}></span>
-              Live prices
-            </div>
-            <a href="https://fundproplus.com" target="_blank" style={{ fontSize:11, color:'#4a5580', textDecoration:'none' }}>fundproplus.com</a>
+        {/* Top bar */}
+        <div style={{ background:'#fff', borderBottom:'1px solid #E8EAF0', padding:'10px 28px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <LiveClock />
+          <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:'#9EA6C0' }}>
+            <span style={{ width:7, height:7, borderRadius:'50%', background:'#00B386', display:'inline-block', animation:'pulse 1.5s ease-in-out infinite' }}></span>
+            Live market data
           </div>
         </div>
 
-        {/* Page content */}
-        <main style={{ flex:1, padding:'28px 32px' }}>
+        {/* Content */}
+        <main style={{ flex:1, padding:'24px 28px' }}>
           {children}
         </main>
       </div>
     </div>
   )
-}
-
-function LiveClock() {
-  const [time, setTime] = useState('')
-  useEffect(() => {
-    const update = () => {
-      const now = new Date()
-      setTime(now.toLocaleString('en-GB', { weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', second:'2-digit' }))
-    }
-    update()
-    const id = setInterval(update, 1000)
-    return () => clearInterval(id)
-  }, [])
-  return <span style={{ fontFamily:"'DM Mono',monospace" }}>{time}</span>
 }
