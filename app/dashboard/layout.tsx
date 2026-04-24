@@ -12,6 +12,7 @@ const nav = [
     { href:'/dashboard/journal',   label:'Journal',     icon:'◧' },
     { href:'/dashboard/stacker',   label:'Multi-Acct',  icon:'◫' },
     { href:'/dashboard/simulator', label:'Simulator',   icon:'◬' },
+    { href:'/dashboard/trading',   label:'Trading Desk', icon:'💹', badge:'NEW' },
   ]},
   { group:'Market data', items:[
     { href:'/dashboard/charts',    label:'Live Charts', icon:'📈' },
