@@ -24,7 +24,7 @@ function TradeTicket({ onTrade }: { onTrade: (t:any)=>void }) {
   const [tp, setTp] = useState(40)
   const [setup, setSetup] = useState('Trend Follow')
   const [notes, setNotes] = useState('')
-  const [submitting, setSubmitting] = useState<'BUY'|'SELL'|null>(null)
+  const [submitting, setSubmitting] = useState<'LONG'|'SHORT'|null>(null)
   const [flash, setFlash] = useState<{dir:string;pnl:number}|null>(null)
 
   const price = BASE_PRICES[pair] || 1
@@ -186,23 +186,23 @@ function TradeTicket({ onTrade }: { onTrade: (t:any)=>void }) {
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
         <button onClick={()=>placeTrade('LONG')} disabled={!!submitting} style={{
           padding:'14px', fontSize:14, fontWeight:800, borderRadius:12, cursor:submitting?'not-allowed':'pointer',
-          background: submitting==='BUY'?'#E8FBF5':'linear-gradient(135deg,#00B386,#00C896)',
-          border:'none', color: submitting==='BUY'?'#00B386':'#fff',
+          background: submitting==='LONG'?'#E8FBF5':'linear-gradient(135deg,#00B386,#00C896)',
+          border:'none', color: submitting==='LONG'?'#00B386':'#fff',
           fontFamily:"'Nunito',sans-serif",
           boxShadow: submitting?'none':'0 4px 16px rgba(0,179,134,0.35)',
           transition:'all .2s'
         }}>
-          {submitting==='BUY'?'Placing…':'BUY / LONG ↑'}
+          {submitting==='LONG'?'Placing…':'BUY / LONG ↑'}
         </button>
         <button onClick={()=>placeTrade('SHORT')} disabled={!!submitting} style={{
           padding:'14px', fontSize:14, fontWeight:800, borderRadius:12, cursor:submitting?'not-allowed':'pointer',
-          background: submitting==='SELL'?'#FFEBEE':'linear-gradient(135deg,#F44336,#FF5252)',
-          border:'none', color: submitting==='SELL'?'#F44336':'#fff',
+          background: submitting==='SHORT'?'#FFEBEE':'linear-gradient(135deg,#F44336,#FF5252)',
+          border:'none', color: submitting==='SHORT'?'#F44336':'#fff',
           fontFamily:"'Nunito',sans-serif",
           boxShadow: submitting?'none':'0 4px 16px rgba(244,67,54,0.35)',
           transition:'all .2s'
         }}>
-          {submitting==='SELL'?'Placing…':'SELL / SHORT ↓'}
+          {submitting==='SHORT'?'Placing…':'SELL / SHORT ↓'}
         </button>
       </div>
 
