@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Card, SectionTitle, MetricCard, ResultRow, ProgressBar, Alert, PageHeader, NumInput, ResultBox, Btn } from '@/components/ui'
+import { Card, SectionTitle, ResultRow, Alert, PageHeader, NumInput, ResultBox } from '@/components/ui'
 
 const PRESETS = {
   ftmo:    { acc:100000, pt:10, mdd:5,  tdd:10, days:30, name:'FTMO' },
@@ -12,12 +12,12 @@ const PRESETS = {
 const fmt = (n:number) => '$'+Math.abs(Math.round(n)).toLocaleString()
 
 export default function ChallengePage() {
-  const [preset, setPreset] = useState('ftmo')
+  const [preset,setPreset]=useState('ftmo')
   const [acc,setAcc]=useState(100000); const [pt,setPt]=useState(10)
   const [mdd,setMdd]=useState(5); const [tdd,setTdd]=useState(10); const [days,setDays]=useState(30)
   const [curPnl,setCurPnl]=useState(4200); const [doneDays,setDoneDays]=useState(12); const [bigLoss,setBigLoss]=useState(800)
 
-  const loadPreset=(key:string)=>{ const p=PRESETS[key as keyof typeof PRESETS]; setPreset(key); setAcc(p.acc); setPt(p.pt); setMdd(p.mdd); setTdd(p.tdd); setDays(p.days) }
+  const loadPreset=(key:string)=>{const p=PRESETS[key as keyof typeof PRESETS];setPreset(key);setAcc(p.acc);setPt(p.pt);setMdd(p.mdd);setTdd(p.tdd);setDays(p.days)}
   const targetAmt=acc*pt/100; const mddAmt=acc*mdd/100; const tddAmt=acc*tdd/100
   const dailyBase=targetAmt/days; const remain=Math.max(0,targetAmt-curPnl)
   const drem=Math.max(1,days-doneDays); const newDaily=remain/drem
@@ -28,25 +28,41 @@ export default function ChallengePage() {
   const onTrack=curPnl/targetAmt>=doneDays/days*0.85
   const passed=curPnl>=targetAmt
 
+  const ProgBar = ({pct,color,label,sublabel}:{pct:number;color:string;label:string;sublabel:string}) => (
+    <div style={{marginBottom:14}}>
+      <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'#9EA6C0',marginBottom:6,fontWeight:500}}>
+        <span>{label}</span><span>{sublabel}</span>
+      </div>
+      <div style={{height:7,background:'#F0F2F5',borderRadius:4,overflow:'hidden'}}>
+        <div style={{height:'100%',width:`${Math.min(100,Math.max(0,pct))}%`,background:color,borderRadius:4,transition:'width .4s ease'}}/>
+      </div>
+    </div>
+  )
+
   return (
     <div>
-      <PageHeader title="Challenge tracker" subtitle="Track your prop firm evaluation in real time." />
+      <style>{`
+        .ch-layout { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
+        .ch-stats  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        @media (max-width: 768px) {
+          .ch-layout { grid-template-columns: 1fr !important; }
+          .ch-stats  { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
 
-      {/* Firm presets */}
+      <PageHeader title="Challenge tracker" subtitle="Track your prop firm evaluation in real time."/>
+
       <div style={{display:'flex',gap:8,marginBottom:20,flexWrap:'wrap'}}>
         {Object.entries(PRESETS).map(([key,p])=>(
           <button key={key} onClick={()=>loadPreset(key)} style={{
-            padding:'7px 16px', fontSize:12, borderRadius:20, cursor:'pointer', fontWeight:600,
-            background: preset===key?'#00B386':'#fff',
-            border: preset===key?'none':'1.5px solid #E8EAF0',
-            color: preset===key?'#fff':'#5A6078',
-            boxShadow: preset===key?'0 4px 12px rgba(0,179,134,0.3)':'none',
-            transition:'all .15s'
+            padding:'7px 16px',fontSize:12,borderRadius:20,cursor:'pointer',fontWeight:700,
+            background:preset===key?'#00B386':'#fff',border:preset===key?'none':'1.5px solid #E8EAF0',
+            color:preset===key?'#fff':'#5A6078',boxShadow:preset===key?'0 4px 12px rgba(0,179,134,0.3)':'none',transition:'all .15s'
           }}>{p.name}</button>
         ))}
       </div>
 
-      <div style={{display:'grid',gridTemplateColumns:'300px 1fr',gap:16,alignItems:'start'}}>
+      <div className="ch-layout">
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
           <Card>
             <SectionTitle>Challenge rules</SectionTitle>
@@ -65,11 +81,19 @@ export default function ChallengePage() {
         </div>
 
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
-            <MetricCard label="Target" value={fmt(targetAmt)} sub="profit needed"/>
-            <MetricCard label="Balance" value={fmt(bal)} sub="current" color={bal>=acc?'#00B386':'#F44336'} trend={bal>=acc?'up':'down'}/>
-            <MetricCard label="Remaining" value={fmt(remain)} sub={`${drem} days left`}/>
-            <MetricCard label="Status" value={passed?'PASSED':onTrack?'ON TRACK':'BEHIND'} color={passed||onTrack?'#00B386':'#F44336'} trend={passed||onTrack?'up':'down'}/>
+          <div className="ch-stats">
+            {[
+              {label:'Target',val:fmt(targetAmt),sub:'profit needed',color:'#1A1D2E'},
+              {label:'Balance',val:fmt(bal),sub:'current',color:bal>=acc?'#00B386':'#F44336'},
+              {label:'Remaining',val:fmt(remain),sub:`${drem} days left`,color:'#FF9800'},
+              {label:'Status',val:passed?'PASSED':onTrack?'ON TRACK':'BEHIND',sub:'',color:passed||onTrack?'#00B386':'#F44336'},
+            ].map(s=>(
+              <div key={s.label} style={{background:'#fff',border:`1.5px solid ${s.color==='#00B386'||s.color==='#1A1D2E'?'#E8EAF0':s.color+'40'}`,borderRadius:14,padding:'14px 16px',boxShadow:'0 1px 3px rgba(0,0,0,0.05)'}}>
+                <div style={{fontSize:10,letterSpacing:'.07em',textTransform:'uppercase',color:'#9EA6C0',fontWeight:700,marginBottom:6}}>{s.label}</div>
+                <div style={{fontSize:20,fontWeight:800,color:s.color,fontFamily:"'Nunito',sans-serif",lineHeight:1.1}}>{s.val}</div>
+                {s.sub&&<div style={{fontSize:11,color:'#9EA6C0',marginTop:3,fontWeight:500}}>{s.sub}</div>}
+              </div>
+            ))}
           </div>
 
           <Card>
@@ -85,11 +109,11 @@ export default function ChallengePage() {
 
           <Card>
             <SectionTitle>Progress</SectionTitle>
-            <ProgressBar pct={profPct} color={profPct>=80?'#00B386':profPct>=50?'#7C4DFF':'#FF9800'} label="Profit progress" sublabel={`${profPct}%`}/>
-            <ProgressBar pct={timePct} color="#FF9800" label="Time consumed" sublabel={`${timePct}%`}/>
-            <ProgressBar pct={ddPct} color={ddPct>70?'#F44336':'#FF9800'} label="Drawdown used" sublabel={`${ddPct}%`}/>
+            <ProgBar pct={profPct} color={profPct>=80?'#00B386':profPct>=50?'#7C4DFF':'#FF9800'} label="Profit progress" sublabel={`${profPct}%`}/>
+            <ProgBar pct={timePct} color="#FF9800" label="Time consumed" sublabel={`${timePct}%`}/>
+            <ProgBar pct={ddPct} color={ddPct>70?'#F44336':'#FF9800'} label="Drawdown used" sublabel={`${ddPct}%`}/>
             <Alert type={passed?'success':bigLoss>=mddAmt*0.8?'danger':!onTrack?'warn':'info'}>
-              {passed?'Challenge target hit! Request the funded account now.':bigLoss>=mddAmt*0.8?'WARNING: Single trade close to daily drawdown limit — reduce size immediately.':!onTrack?'Behind pace. Slightly increase trade frequency (not size) to catch up.':'Pace is healthy — keep position sizing consistent.'}
+              {passed?'Challenge target hit! Request the funded account now.':bigLoss>=mddAmt*0.8?'WARNING: Single trade close to daily DD limit.':!onTrack?'Behind pace. Slightly increase frequency (not size).':'Pace is healthy — keep position sizing consistent.'}
             </Alert>
           </Card>
         </div>

@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Card, SectionTitle, MetricCard, ResultRow, Alert, PageHeader, NumInput, Field, ResultBox, SliderRow } from '@/components/ui'
+import { Card, SectionTitle, ResultRow, Alert, PageHeader, NumInput, Field, ResultBox, SliderRow } from '@/components/ui'
 
 const INSTRUMENTS: Record<string,{label:string;pipVal:number;unit:string}> = {
   forex:  {label:'Forex — major pairs',pipVal:10, unit:'pips'},
@@ -28,8 +28,18 @@ export default function RiskPage() {
 
   return (
     <div>
+      <style>{`
+        .risk-layout { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
+        .risk-stats  { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        @media (max-width: 768px) {
+          .risk-layout { grid-template-columns: 1fr !important; }
+          .risk-stats  { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
+
       <PageHeader title="Risk manager" subtitle="Calculate your exact position size before every trade."/>
-      <div style={{display:'grid',gridTemplateColumns:'300px 1fr',gap:16,alignItems:'start'}}>
+
+      <div className="risk-layout">
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
           <Card>
             <SectionTitle>Trade parameters</SectionTitle>
@@ -47,10 +57,17 @@ export default function RiskPage() {
         </div>
 
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
-            <MetricCard label="Risk amount" value={'$'+Math.round(riskAmt).toLocaleString()} color="#FF9800" trend="neutral"/>
-            <MetricCard label="Position size" value={lots.toFixed(2)+' lots'} color="#2196F3" trend="neutral"/>
-            <MetricCard label="Take profit" value={'$'+Math.round(tpAmt).toLocaleString()} color="#00B386" trend="up"/>
+          <div className="risk-stats">
+            {[
+              {label:'Risk amount',val:'$'+Math.round(riskAmt).toLocaleString(),color:'#FF9800'},
+              {label:'Position size',val:lots.toFixed(2)+' lots',color:'#2196F3'},
+              {label:'Take profit',val:'$'+Math.round(tpAmt).toLocaleString(),color:'#00B386'},
+            ].map(s=>(
+              <div key={s.label} style={{background:'#fff',border:'1px solid #E8EAF0',borderRadius:14,padding:'14px 16px',boxShadow:'0 1px 3px rgba(0,0,0,0.05)'}}>
+                <div style={{fontSize:10,letterSpacing:'.07em',textTransform:'uppercase',color:'#9EA6C0',fontWeight:700,marginBottom:6}}>{s.label}</div>
+                <div style={{fontSize:20,fontWeight:800,color:s.color,fontFamily:"'Nunito',sans-serif"}}>{s.val}</div>
+              </div>
+            ))}
           </div>
 
           <Card>
@@ -73,7 +90,9 @@ export default function RiskPage() {
                 <div key={i} style={{flex:1,height:8,borderRadius:3,background:i<=2?'#00B386':i<=4?'#FF9800':'#F44336',opacity:i<=riskLevel?1:0.15,transition:'opacity .2s'}}/>
               ))}
             </div>
-            <div style={{fontSize:12,color:riskColor,fontWeight:600,marginTop:4}}>{rp<=1?'Low risk — safe for prop firm rules':rp<=2?'Moderate — maintain strict discipline':'High risk — danger to drawdown limits'}</div>
+            <div style={{fontSize:12,color:riskColor,fontWeight:600,marginTop:4}}>
+              {rp<=1?'Low risk — safe for prop firm rules':rp<=2?'Moderate — maintain strict discipline':'High risk — danger to drawdown limits'}
+            </div>
           </Card>
 
           <Card>
@@ -87,7 +106,7 @@ export default function RiskPage() {
               <ResultRow label="Net result" value={(net100>=0?'+':'')+' $'+Math.abs(Math.round(net100)).toLocaleString()} color={net100>=0?'#00B386':'#F44336'}/>
               <ResultRow label="Expectancy / trade" value={(expPerTrade>=0?'+':'')+' $'+Math.abs(Math.round(expPerTrade)).toLocaleString()} color={expPerTrade>=0?'#00B386':'#F44336'}/>
             </ResultBox>
-            {expPerTrade<0&&<Alert type="danger">Negative expectancy — adjust win rate or R:R ratio before trading.</Alert>}
+            {expPerTrade<0&&<Alert type="danger">Negative expectancy — adjust win rate or R:R before trading.</Alert>}
             {expPerTrade>=0&&expPerTrade<riskAmt*0.1&&<Alert type="warn">Marginal edge — consistency and discipline are critical.</Alert>}
             {expPerTrade>=riskAmt*0.1&&<Alert type="success">Positive expectancy — this strategy has a real edge.</Alert>}
           </Card>

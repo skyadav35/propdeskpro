@@ -1,8 +1,8 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { Card, SectionTitle, MetricCard, ResultRow, Alert, PageHeader, SliderRow, ResultBox, Btn } from '@/components/ui'
+import { Card, SectionTitle, ResultRow, Alert, PageHeader, SliderRow, ResultBox } from '@/components/ui'
 
-const PRESETS={ftmo:{label:'FTMO',pt:10,mdd:5,tdd:10,days:30},topstep:{label:'Topstep',pt:6,mdd:4,tdd:8,days:30},the5:{label:'The5%ers',pt:6,mdd:4,tdd:8,days:60},custom:{label:'Custom',pt:10,mdd:5,tdd:10,days:30}}
+const PRESETS={ftmo:{label:'FTMO',pt:10,mdd:5,tdd:10,days:30},topstep:{label:'Topstep',pt:6,mdd:4,tdd:8,days:30},the5:{label:"The5%ers",pt:6,mdd:4,tdd:8,days:60},custom:{label:'Custom',pt:10,mdd:5,tdd:10,days:30}}
 const fmt=(n:number)=>'$'+Math.abs(Math.round(n)).toLocaleString()
 
 interface SimResult{passRate:number;passed:number;fDDD:number;fTDD:number;fTime:number;avgPnl:number;ddBreachRate:number;best:number;worst:number;med:number;p95:number;p5:number;nsims:number;passPaths:number[][];failPaths:number[][]}
@@ -31,7 +31,7 @@ export default function SimulatorPage() {
           for(let t=0;t<tpd;t++){
             const risk=(acc+pnl)*rpt/100
             const tradePnl=Math.random()<wrFrac?risk*rr:-risk
-            pnl+=tradePnl; dayPnl+=tradePnl
+            pnl+=tradePnl;dayPnl+=tradePnl
             if(pnl>=target){outcome='pass';break outer}
             if(dayPnl<=-mddAmt){outcome='f_ddd';break outer}
             if(pnl<=-tddAmt){outcome='f_tdd';break outer}
@@ -50,9 +50,9 @@ export default function SimulatorPage() {
 
   useEffect(()=>{
     if(!result||!canvasRef.current)return
-    const canvas=canvasRef.current; const ctx=canvas.getContext('2d'); if(!ctx)return
-    const dpr=window.devicePixelRatio||1; const W=canvas.offsetWidth,H=canvas.offsetHeight
-    canvas.width=W*dpr; canvas.height=H*dpr; ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H)
+    const canvas=canvasRef.current;const ctx=canvas.getContext('2d');if(!ctx)return
+    const dpr=window.devicePixelRatio||1;const W=canvas.offsetWidth,H=canvas.offsetHeight
+    canvas.width=W*dpr;canvas.height=H*dpr;ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H)
     const target=acc*pt/100,tddAmt=acc*tdd/100
     const allPaths=[...result.failPaths,...result.passPaths]
     const allVals=allPaths.flat()
@@ -60,16 +60,15 @@ export default function SimulatorPage() {
     const pad={top:20,bottom:20,left:10,right:10}
     const toX=(i:number,len:number)=>pad.left+(i/(len-1))*(W-pad.left-pad.right)
     const toY=(v:number)=>H-pad.bottom-((v-minV)/(maxV-minV))*(H-pad.top-pad.bottom)
-    ctx.strokeStyle='rgba(240,242,245,0.8)'; ctx.lineWidth=0.5
-    for(let i=0;i<=4;i++){const y=pad.top+(i/4)*(H-pad.top-pad.bottom); ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke()}
-    // target & floor
-    ctx.strokeStyle='rgba(0,179,134,0.3)'; ctx.lineWidth=1; ctx.setLineDash([5,5])
-    ctx.beginPath(); ctx.moveTo(0,toY(target)); ctx.lineTo(W,toY(target)); ctx.stroke()
+    ctx.strokeStyle='rgba(240,242,245,0.8)';ctx.lineWidth=0.5
+    for(let i=0;i<=4;i++){const y=pad.top+(i/4)*(H-pad.top-pad.bottom);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+    ctx.strokeStyle='rgba(0,179,134,0.3)';ctx.lineWidth=1;ctx.setLineDash([5,5])
+    ctx.beginPath();ctx.moveTo(0,toY(target));ctx.lineTo(W,toY(target));ctx.stroke()
     ctx.strokeStyle='rgba(244,67,54,0.3)'
-    ctx.beginPath(); ctx.moveTo(0,toY(-tddAmt)); ctx.lineTo(W,toY(-tddAmt)); ctx.stroke()
+    ctx.beginPath();ctx.moveTo(0,toY(-tddAmt));ctx.lineTo(W,toY(-tddAmt));ctx.stroke()
     ctx.setLineDash([])
-    result.failPaths.forEach(p=>{ctx.strokeStyle='rgba(244,67,54,0.3)'; ctx.lineWidth=1; ctx.beginPath(); p.forEach((v,i)=>{const x=toX(i,p.length),y=toY(v); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}); ctx.stroke()})
-    result.passPaths.forEach(p=>{ctx.strokeStyle='rgba(0,179,134,0.5)'; ctx.lineWidth=1.5; ctx.beginPath(); p.forEach((v,i)=>{const x=toX(i,p.length),y=toY(v); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}); ctx.stroke()})
+    result.failPaths.forEach(p=>{ctx.strokeStyle='rgba(244,67,54,0.3)';ctx.lineWidth=1;ctx.beginPath();p.forEach((v,i)=>{const x=toX(i,p.length),y=toY(v);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.stroke()})
+    result.passPaths.forEach(p=>{ctx.strokeStyle='rgba(0,179,134,0.5)';ctx.lineWidth=1.5;ctx.beginPath();p.forEach((v,i)=>{const x=toX(i,p.length),y=toY(v);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.stroke()})
   },[result,acc,pt,tdd])
 
   const riskAmt=acc*rpt/100,winAmt=riskAmt*rr
@@ -77,14 +76,25 @@ export default function SimulatorPage() {
   const edpnl=exp*tpd
   const dtt=edpnl>0?Math.ceil(acc*pt/100/edpnl):-1
   const be=Math.round(100/(1+rr))
-
   const verdictColor=result?(result.passRate>=70?'#00B386':result.passRate>=40?'#FF9800':'#F44336'):'#9EA6C0'
   const verdictBg=result?(result.passRate>=70?'#E8FBF5':result.passRate>=40?'#FFF3E0':'#FFEBEE'):'#F7F8FA'
 
   return (
     <div>
+      <style>{`
+        .sim-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start; }
+        .sim-stats  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .sim-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 768px) {
+          .sim-layout { grid-template-columns: 1fr !important; }
+          .sim-stats  { grid-template-columns: 1fr 1fr !important; }
+          .sim-bottom { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+
       <PageHeader title="Challenge simulator" subtitle="Run Monte Carlo simulations to find your pass probability before buying a real challenge."/>
-      <div style={{display:'grid',gridTemplateColumns:'280px 1fr',gap:16,alignItems:'start'}}>
+
+      <div className="sim-layout">
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
           <Card>
             <SectionTitle>Firm preset</SectionTitle>
@@ -117,9 +127,16 @@ export default function SimulatorPage() {
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
           <Card>
             <SectionTitle>Pre-simulation estimates</SectionTitle>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:10}}>
-              <MetricCard label="Expectancy" value={(exp/riskAmt>=0?'+':'')+(exp/riskAmt).toFixed(3)} color={exp>=0?'#00B386':'#F44336'} sub="per $1 risked"/>
-              <MetricCard label="Expected daily P&L" value={(edpnl>=0?'+':'')+fmt(edpnl)} color={edpnl>=0?'#00B386':'#F44336'}/>
+            <div className="sim-stats" style={{marginBottom:10}}>
+              {[
+                {label:'Expectancy',val:(exp/riskAmt>=0?'+':'')+(exp/riskAmt).toFixed(3),color:exp>=0?'#00B386':'#F44336',sub:'per $1 risked'},
+                {label:'Expected daily P&L',val:(edpnl>=0?'+':'')+fmt(edpnl),color:edpnl>=0?'#00B386':'#F44336',sub:''},
+              ].map(s=>(
+                <div key={s.label} style={{background:'#F7F8FA',borderRadius:10,padding:'12px 14px',border:'1px solid #F0F2F5'}}>
+                  <div style={{fontSize:10,letterSpacing:'.07em',textTransform:'uppercase',color:'#9EA6C0',fontWeight:700,marginBottom:4}}>{s.label}</div>
+                  <div style={{fontSize:18,fontWeight:800,color:s.color,fontFamily:"'Nunito',sans-serif"}}>{s.val}</div>
+                </div>
+              ))}
             </div>
             <ResultBox>
               <ResultRow label="Breakeven win rate" value={be+'% (yours: '+wr+'%)'} color={wr>be?'#00B386':'#F44336'}/>
@@ -127,41 +144,58 @@ export default function SimulatorPage() {
             </ResultBox>
           </Card>
 
-          {!result?(
+          {!result&&!running&&(
             <Card>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:220,color:'#9EA6C0',fontSize:13,border:'2px dashed #E8EAF0',borderRadius:12}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:180,color:'#9EA6C0',fontSize:13,border:'2px dashed #E8EAF0',borderRadius:12,textAlign:'center',padding:20}}>
                 Adjust sliders and click "Run simulation"
               </div>
             </Card>
-          ):(
+          )}
+
+          {running&&(
+            <Card>
+              <div style={{textAlign:'center',padding:'40px 24px',color:'#9EA6C0',fontSize:13}}>
+                Running {nsims} simulations…
+              </div>
+            </Card>
+          )}
+
+          {result&&!running&&(
             <>
               <div style={{padding:'14px 18px',borderRadius:14,textAlign:'center',fontSize:14,fontWeight:700,background:verdictBg,color:verdictColor,border:`1.5px solid ${verdictColor}30`}}>
-                {result.passRate>=70?`Strategy likely passes — ${result.passRate}% pass rate. Ready to buy the challenge.`:result.passRate>=40?`Marginal — ${result.passRate}% pass rate. Tweak your numbers first.`:`Strategy likely fails — ${result.passRate}% pass rate. Significant adjustments needed.`}
+                {result.passRate>=70?`Strategy likely passes — ${result.passRate}% pass rate.`:result.passRate>=40?`Marginal — ${result.passRate}% pass rate. Tweak first.`:`Strategy likely fails — ${result.passRate}% pass rate.`}
               </div>
 
-              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
-                <MetricCard label="Pass rate" value={result.passRate+'%'} color={verdictColor} trend={result.passRate>=70?'up':result.passRate>=40?'neutral':'down'}/>
-                <MetricCard label="Avg P&L" value={(result.avgPnl>=0?'+':'')+fmt(result.avgPnl)} color={result.avgPnl>=0?'#00B386':'#F44336'}/>
-                <MetricCard label="DD breach" value={result.ddBreachRate+'%'} color={result.ddBreachRate<20?'#00B386':'#F44336'}/>
-                <MetricCard label="Simulations" value={result.nsims.toString()} color="#7C4DFF"/>
+              <div className="sim-stats">
+                {[
+                  {label:'Pass rate',val:result.passRate+'%',color:verdictColor},
+                  {label:'Avg P&L',val:(result.avgPnl>=0?'+':'')+fmt(result.avgPnl),color:result.avgPnl>=0?'#00B386':'#F44336'},
+                  {label:'DD breach',val:result.ddBreachRate+'%',color:result.ddBreachRate<20?'#00B386':'#F44336'},
+                  {label:'Simulations',val:result.nsims.toString(),color:'#7C4DFF'},
+                ].map(s=>(
+                  <div key={s.label} style={{background:'#fff',border:'1px solid #E8EAF0',borderRadius:14,padding:'14px 16px',boxShadow:'0 1px 3px rgba(0,0,0,0.05)'}}>
+                    <div style={{fontSize:10,letterSpacing:'.07em',textTransform:'uppercase',color:'#9EA6C0',fontWeight:700,marginBottom:6}}>{s.label}</div>
+                    <div style={{fontSize:20,fontWeight:800,color:s.color,fontFamily:"'Nunito',sans-serif"}}>{s.val}</div>
+                  </div>
+                ))}
               </div>
 
               <Card>
-                <div style={{display:'flex',gap:16,fontSize:11,color:'#9EA6C0',marginBottom:8,fontWeight:600}}>
-                  <span><span style={{display:'inline-block',width:12,height:3,background:'#00B386',marginRight:4,verticalAlign:'middle',borderRadius:2}}></span>Pass path</span>
-                  <span><span style={{display:'inline-block',width:12,height:3,background:'#F44336',marginRight:4,verticalAlign:'middle',borderRadius:2}}></span>Fail path</span>
-                  <span style={{marginLeft:'auto',color:'#C4CAD9'}}>Green dashes = target · Red dashes = DD floor</span>
+                <div style={{display:'flex',gap:14,fontSize:11,color:'#9EA6C0',marginBottom:8,fontWeight:600,flexWrap:'wrap'}}>
+                  <span><span style={{display:'inline-block',width:12,height:3,background:'#00B386',marginRight:4,verticalAlign:'middle',borderRadius:2}}></span>Pass</span>
+                  <span><span style={{display:'inline-block',width:12,height:3,background:'#F44336',marginRight:4,verticalAlign:'middle',borderRadius:2}}></span>Fail</span>
+                  <span style={{marginLeft:'auto',color:'#C4CAD9'}}>Green = target · Red = DD floor</span>
                 </div>
-                <div style={{position:'relative',width:'100%',height:220,background:'#F7F8FA',borderRadius:10,overflow:'hidden'}}>
+                <div style={{position:'relative',width:'100%',height:180,background:'#F7F8FA',borderRadius:10,overflow:'hidden'}}>
                   <canvas ref={canvasRef} style={{width:'100%',height:'100%',display:'block'}}/>
                 </div>
               </Card>
 
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+              <div className="sim-bottom">
                 <Card>
                   <SectionTitle>Outcome breakdown</SectionTitle>
                   <ResultBox>
-                    <ResultRow label="Passed challenge" value={result.passed+' runs'} color="#00B386"/>
+                    <ResultRow label="Passed" value={result.passed+' runs'} color="#00B386"/>
                     <ResultRow label="Failed — daily DD" value={result.fDDD+' runs'} color="#F44336"/>
                     <ResultRow label="Failed — total DD" value={result.fTDD+' runs'} color="#F44336"/>
                     <ResultRow label="Failed — time" value={result.fTime+' runs'} color="#FF9800"/>
@@ -176,7 +210,7 @@ export default function SimulatorPage() {
                     <ResultRow label="95th percentile" value={'+'+fmt(result.p95)} color="#00B386"/>
                     <ResultRow label="5th percentile" value={(result.p5>=0?'+':'')+fmt(result.p5)} color={result.p5>=0?'#00B386':'#F44336'}/>
                   </ResultBox>
-                  {result.fDDD>result.fTDD&&<Alert type="warn">Most failures are daily DD breaches — reduce risk per trade.</Alert>}
+                  {result.fDDD>result.fTDD&&<Alert type="warn">Most failures are daily DD — reduce risk per trade.</Alert>}
                   {result.fTime>result.fDDD+result.fTDD&&<Alert type="info">Most failures are time expiry — increase trade frequency slightly.</Alert>}
                 </Card>
               </div>
