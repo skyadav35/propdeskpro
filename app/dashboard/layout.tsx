@@ -23,6 +23,9 @@ const nav = [
   { group:'AI Tools', items:[
     { href:'/dashboard/ai-review',  label:'AI Review',    icon:'🤖', badge:'NEW' },
   ]},
+  { group:'Earn', items:[
+    { href:'/dashboard/affiliates', label:'Affiliates',   icon:'🤝', badge:'💰' },
+  ]},
 ]
 
 const BASE: Record<string,number> = {
