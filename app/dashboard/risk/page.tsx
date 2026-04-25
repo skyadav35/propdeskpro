@@ -1,16 +1,18 @@
 'use client'
 import { useState } from 'react'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { Card, SectionTitle, ResultRow, Alert, PageHeader, NumInput, Field, ResultBox, SliderRow } from '@/components/ui'
 
 const INSTRUMENTS: Record<string,{label:string;pipVal:number;unit:string}> = {
-  forex:  {label:'Forex — major pairs',pipVal:10, unit:'pips'},
-  gold:   {label:'Gold (XAU/USD)',     pipVal:1,  unit:'pips'},
-  nas100: {label:'NAS100 / US100',     pipVal:1,  unit:'points'},
+  forex:  {label:'Forex — major pairs',pipVal:10,unit:'pips'},
+  gold:   {label:'Gold (XAU/USD)',     pipVal:1, unit:'pips'},
+  nas100: {label:'NAS100 / US100',     pipVal:1, unit:'points'},
   spx:    {label:'S&P500 / US500',     pipVal:0.5,unit:'points'},
-  btc:    {label:'Bitcoin (BTC)',      pipVal:1,  unit:'points'},
+  btc:    {label:'Bitcoin (BTC)',      pipVal:1, unit:'points'},
 }
 
 export default function RiskPage() {
+  const isMobile = useIsMobile()
   const [bal,setBal]=useState(100000); const [rp,setRp]=useState(1)
   const [sl,setSl]=useState(20); const [tp,setTp]=useState(60)
   const [inst,setInst]=useState('forex'); const [trades,setTrades]=useState(2); const [wr,setWr]=useState(55)
@@ -28,18 +30,8 @@ export default function RiskPage() {
 
   return (
     <div>
-      <style>{`
-        .risk-layout { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
-        .risk-stats  { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-        @media (max-width: 768px) {
-          .risk-layout { grid-template-columns: 1fr !important; }
-          .risk-stats  { grid-template-columns: 1fr 1fr !important; }
-        }
-      `}</style>
-
       <PageHeader title="Risk manager" subtitle="Calculate your exact position size before every trade."/>
-
-      <div className="risk-layout">
+      <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'300px 1fr',gap:16,alignItems:'start'}}>
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
           <Card>
             <SectionTitle>Trade parameters</SectionTitle>
@@ -57,7 +49,7 @@ export default function RiskPage() {
         </div>
 
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
-          <div className="risk-stats">
+          <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(3,1fr)',gap:10}}>
             {[
               {label:'Risk amount',val:'$'+Math.round(riskAmt).toLocaleString(),color:'#FF9800'},
               {label:'Position size',val:lots.toFixed(2)+' lots',color:'#2196F3'},
@@ -65,7 +57,7 @@ export default function RiskPage() {
             ].map(s=>(
               <div key={s.label} style={{background:'#fff',border:'1px solid #E8EAF0',borderRadius:14,padding:'14px 16px',boxShadow:'0 1px 3px rgba(0,0,0,0.05)'}}>
                 <div style={{fontSize:10,letterSpacing:'.07em',textTransform:'uppercase',color:'#9EA6C0',fontWeight:700,marginBottom:6}}>{s.label}</div>
-                <div style={{fontSize:20,fontWeight:800,color:s.color,fontFamily:"'Nunito',sans-serif"}}>{s.val}</div>
+                <div style={{fontSize:isMobile?16:20,fontWeight:800,color:s.color,fontFamily:"'Nunito',sans-serif"}}>{s.val}</div>
               </div>
             ))}
           </div>

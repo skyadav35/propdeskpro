@@ -1,17 +1,30 @@
 'use client'
 import { useState } from 'react'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { Card, SectionTitle, ResultRow, Alert, PageHeader, NumInput, ResultBox } from '@/components/ui'
 
 const PRESETS = {
   ftmo:    { acc:100000, pt:10, mdd:5,  tdd:10, days:30, name:'FTMO' },
   topstep: { acc:50000,  pt:6,  mdd:4,  tdd:8,  days:30, name:'Topstep' },
-  the5:    { acc:100000, pt:6,  mdd:4,  tdd:8,  days:60, name:'The5%ers' },
+  the5:    { acc:100000, pt:6,  mdd:4,  tdd:8,  days:60, name:"The5%ers" },
   myfx:    { acc:100000, pt:8,  mdd:5,  tdd:10, days:30, name:'MyFundedFX' },
   apex:    { acc:50000,  pt:6,  mdd:3,  tdd:6,  days:30, name:'Apex' },
 }
 const fmt = (n:number) => '$'+Math.abs(Math.round(n)).toLocaleString()
 
+const ProgBar = ({pct,color,label,sublabel}:{pct:number;color:string;label:string;sublabel:string}) => (
+  <div style={{marginBottom:14}}>
+    <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'#9EA6C0',marginBottom:6,fontWeight:500}}>
+      <span>{label}</span><span>{sublabel}</span>
+    </div>
+    <div style={{height:7,background:'#F0F2F5',borderRadius:4,overflow:'hidden'}}>
+      <div style={{height:'100%',width:`${Math.min(100,Math.max(0,pct))}%`,background:color,borderRadius:4,transition:'width .4s ease'}}/>
+    </div>
+  </div>
+)
+
 export default function ChallengePage() {
+  const isMobile = useIsMobile()
   const [preset,setPreset]=useState('ftmo')
   const [acc,setAcc]=useState(100000); const [pt,setPt]=useState(10)
   const [mdd,setMdd]=useState(5); const [tdd,setTdd]=useState(10); const [days,setDays]=useState(30)
@@ -28,28 +41,8 @@ export default function ChallengePage() {
   const onTrack=curPnl/targetAmt>=doneDays/days*0.85
   const passed=curPnl>=targetAmt
 
-  const ProgBar = ({pct,color,label,sublabel}:{pct:number;color:string;label:string;sublabel:string}) => (
-    <div style={{marginBottom:14}}>
-      <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'#9EA6C0',marginBottom:6,fontWeight:500}}>
-        <span>{label}</span><span>{sublabel}</span>
-      </div>
-      <div style={{height:7,background:'#F0F2F5',borderRadius:4,overflow:'hidden'}}>
-        <div style={{height:'100%',width:`${Math.min(100,Math.max(0,pct))}%`,background:color,borderRadius:4,transition:'width .4s ease'}}/>
-      </div>
-    </div>
-  )
-
   return (
     <div>
-      <style>{`
-        .ch-layout { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
-        .ch-stats  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        @media (max-width: 768px) {
-          .ch-layout { grid-template-columns: 1fr !important; }
-          .ch-stats  { grid-template-columns: 1fr 1fr !important; }
-        }
-      `}</style>
-
       <PageHeader title="Challenge tracker" subtitle="Track your prop firm evaluation in real time."/>
 
       <div style={{display:'flex',gap:8,marginBottom:20,flexWrap:'wrap'}}>
@@ -62,7 +55,7 @@ export default function ChallengePage() {
         ))}
       </div>
 
-      <div className="ch-layout">
+      <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'300px 1fr',gap:16,alignItems:'start'}}>
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
           <Card>
             <SectionTitle>Challenge rules</SectionTitle>
@@ -81,16 +74,16 @@ export default function ChallengePage() {
         </div>
 
         <div style={{display:'flex',flexDirection:'column',gap:12}}>
-          <div className="ch-stats">
+          <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(4,1fr)',gap:10}}>
             {[
               {label:'Target',val:fmt(targetAmt),sub:'profit needed',color:'#1A1D2E'},
               {label:'Balance',val:fmt(bal),sub:'current',color:bal>=acc?'#00B386':'#F44336'},
               {label:'Remaining',val:fmt(remain),sub:`${drem} days left`,color:'#FF9800'},
               {label:'Status',val:passed?'PASSED':onTrack?'ON TRACK':'BEHIND',sub:'',color:passed||onTrack?'#00B386':'#F44336'},
             ].map(s=>(
-              <div key={s.label} style={{background:'#fff',border:`1.5px solid ${s.color==='#00B386'||s.color==='#1A1D2E'?'#E8EAF0':s.color+'40'}`,borderRadius:14,padding:'14px 16px',boxShadow:'0 1px 3px rgba(0,0,0,0.05)'}}>
+              <div key={s.label} style={{background:'#fff',border:'1px solid #E8EAF0',borderRadius:14,padding:'14px 16px',boxShadow:'0 1px 3px rgba(0,0,0,0.05)'}}>
                 <div style={{fontSize:10,letterSpacing:'.07em',textTransform:'uppercase',color:'#9EA6C0',fontWeight:700,marginBottom:6}}>{s.label}</div>
-                <div style={{fontSize:20,fontWeight:800,color:s.color,fontFamily:"'Nunito',sans-serif",lineHeight:1.1}}>{s.val}</div>
+                <div style={{fontSize:isMobile?16:20,fontWeight:800,color:s.color,fontFamily:"'Nunito',sans-serif",lineHeight:1.1}}>{s.val}</div>
                 {s.sub&&<div style={{fontSize:11,color:'#9EA6C0',marginTop:3,fontWeight:500}}>{s.sub}</div>}
               </div>
             ))}
